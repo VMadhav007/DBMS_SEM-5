@@ -5,7 +5,7 @@ import './AdminDashboard.css';
 
 function AdminDashboard() {
   const [stats, setStats] = useState({
-    revenue: [],
+    membershipRevenue: 0,
     activeMembers: [],
     popularSessions: [],
     totalSessions: 0,
@@ -19,8 +19,8 @@ function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const [revenueRes, activeMembersRes, popularSessionsRes, sessionsRes, couponsRes] = await Promise.all([
-        adminAPI.getRevenueReport(),
+      const [membershipRevenueRes, activeMembersRes, popularSessionsRes, sessionsRes, couponsRes] = await Promise.all([
+        adminAPI.getTotalMembershipRevenue(),
         adminAPI.getActiveMembers(),
         adminAPI.getPopularSessions(),
         adminAPI.getSessions(),
@@ -28,7 +28,7 @@ function AdminDashboard() {
       ]);
 
       setStats({
-        revenue: revenueRes.data,
+        membershipRevenue: membershipRevenueRes.data.total_revenue,
         activeMembers: activeMembersRes.data,
         popularSessions: popularSessionsRes.data,
         totalSessions: sessionsRes.data.length,
@@ -46,7 +46,7 @@ function AdminDashboard() {
     return `₹${parseFloat(amount).toFixed(2)}`;
   };
 
-  const totalRevenue = stats.revenue.reduce((sum, item) => sum + parseFloat(item.total_revenue || 0), 0);
+  const totalRevenue = stats.membershipRevenue;
   const totalActiveMembers = stats.activeMembers.length;
   const totalPopularSessions = stats.popularSessions.reduce((sum, item) => sum + parseInt(item.total_bookings || 0), 0);
 
@@ -73,7 +73,7 @@ function AdminDashboard() {
         <div className="stat-card">
           <div className="stat-icon">👥</div>
           <div className="stat-info">
-            <h3>Active Members</h3>
+            <h3>Active membership</h3>
             <p className="stat-value">{totalActiveMembers}</p>
           </div>
         </div>
@@ -139,42 +139,6 @@ function AdminDashboard() {
       </div>
 
       <div className="dashboard-sections">
-        <div className="section">
-          <h2>Revenue Breakdown by Branch</h2>
-          <div className="table-container">
-            {stats.revenue.length > 0 ? (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Branch</th>
-                    <th>City</th>
-                    <th>Total Sessions</th>
-                    <th>Total Bookings</th>
-                    <th>Total Revenue</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stats.revenue.map((item, index) => (
-                    <tr key={index}>
-                      <td><strong>{item.branch_name}</strong></td>
-                      <td>{item.city}</td>
-                      <td>{item.total_sessions}</td>
-                      <td>{item.total_bookings}</td>
-                      <td className="currency">{formatCurrency(item.total_revenue)}</td>
-                    </tr>
-                  ))}
-                  <tr className="total-row">
-                    <td colSpan="4"><strong>TOTAL</strong></td>
-                    <td className="currency"><strong>{formatCurrency(totalRevenue)}</strong></td>
-                  </tr>
-                </tbody>
-              </table>
-            ) : (
-              <p className="empty-message">No revenue data available</p>
-            )}
-          </div>
-        </div>
-
         <div className="section">
           <h2>Popular Sessions</h2>
           <div className="table-container">

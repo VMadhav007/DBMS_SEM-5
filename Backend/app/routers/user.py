@@ -429,7 +429,7 @@ def get_user_memberships(user_id: str, db: Session = Depends(get_db)):
 @router.get("/sessions", response_model=List[SessionResponse])
 def get_available_sessions(db: Session = Depends(get_db)):
     """
-    Get all available sessions
+    Get all available sessions (future sessions with capacity)
     """
     try:
         query = text("""
@@ -446,7 +446,14 @@ def get_available_sessions(db: Session = Depends(get_db)):
             ORDER BY s.start_time ASC
         """)
         
+        print(f"[USER SESSIONS] Current time: {datetime.now()}")
+        print(f"[USER SESSIONS] Fetching sessions with start_time > NOW() and capacity > 0")
+        
         results = db.execute(query).fetchall()
+        
+        print(f"[USER SESSIONS] Found {len(results)} available sessions")
+        if len(results) > 0:
+            print(f"[USER SESSIONS] First session: {results[0][2]} at {results[0][5]}")
         
         return [
             SessionResponse(

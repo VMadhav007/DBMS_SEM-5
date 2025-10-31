@@ -16,25 +16,19 @@ const AdminReports = () => {
 
   const fetchReports = async () => {
     try {
-      const [revenueRes, activityRes, sessionsRes, membersRes, branchRes] = await Promise.all([
-        adminAPI.getRevenueReport(),
+      const [membershipRevenueRes, activityRes, sessionsRes, membersRes, branchRes] = await Promise.all([
+        adminAPI.getTotalMembershipRevenue(),
         adminAPI.getUserActivityReport(),
         adminAPI.getPopularSessions(),
         adminAPI.getActiveMembers(),
         adminAPI.getTopBranch()
       ]);
       
-      // Revenue report is an array of branches
-      const revenueData = revenueRes.data;
-      const totalRevenue = revenueData.reduce((sum, branch) => sum + parseFloat(branch.total_revenue || 0), 0);
-      const totalPayments = revenueData.reduce((sum, branch) => sum + parseInt(branch.total_bookings || 0), 0);
-      const averagePayment = totalPayments > 0 ? totalRevenue / totalPayments : 0;
+      // Get membership revenue
+      const totalRevenue = membershipRevenueRes.data.total_revenue || 0;
       
       setRevenueReport({
-        total_revenue: totalRevenue,
-        total_payments: totalPayments,
-        average_payment: averagePayment,
-        branches: revenueData
+        total_revenue: totalRevenue
       });
       
       // User activity report is an array of users
@@ -78,22 +72,8 @@ const AdminReports = () => {
             <div className="stat-card highlight">
               <div className="stat-icon">💵</div>
               <div className="stat-content">
-                <h3>Total Revenue</h3>
+                <h3>Total Membership Revenue</h3>
                 <p className="stat-value">₹{revenueReport.total_revenue?.toLocaleString() || 0}</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">📈</div>
-              <div className="stat-content">
-                <h3>Total Bookings</h3>
-                <p className="stat-value">{revenueReport.total_payments || 0}</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">💳</div>
-              <div className="stat-content">
-                <h3>Average per Booking</h3>
-                <p className="stat-value">₹{revenueReport.average_payment?.toFixed(2) || 0}</p>
               </div>
             </div>
           </div>
@@ -193,7 +173,7 @@ const AdminReports = () => {
 
       {/* Active Members */}
       <div className="report-section">
-        <h2>⭐ Active Members</h2>
+        <h2>⭐ Active Membership</h2>
         <div className="admin-table-card">
           {activeMembers.length === 0 ? (
             <p className="empty-message">No active members</p>

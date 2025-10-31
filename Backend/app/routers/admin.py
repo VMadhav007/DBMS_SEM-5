@@ -784,3 +784,28 @@ def get_top_performing_branch(db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get top performing branch: {str(e)}"
         )
+
+
+@router.get("/reports/total-membership-revenue")
+def get_total_membership_revenue(db: Session = Depends(get_db)):
+    """
+    Get total revenue from all membership purchases
+    """
+    try:
+        query = text("""
+            SELECT COALESCE(SUM(amount), 0) as total_revenue
+            FROM payments
+            WHERE membership_id IS NOT NULL AND status = 'success'
+        """)
+        
+        result = db.execute(query).fetchone()
+        
+        return {
+            "total_revenue": float(result[0]) if result else 0.0
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get membership revenue: {str(e)}"
+        )
