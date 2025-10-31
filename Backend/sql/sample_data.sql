@@ -56,10 +56,10 @@ INSERT INTO membership_plans (id, name, description, price, duration_months, is_
 -- COUPONS
 -- ==========================================
 INSERT INTO coupons (id, code, description, discount_type, discount_value, valid_from, valid_to, is_active) VALUES
-('c1-uuid-0001', 'NEWYEAR2024', 'New Year Special Discount', 'percent', 20.00, '2024-01-01 00:00:00', '2024-01-31 23:59:59', 1),
-('c2-uuid-0002', 'SUMMER50', 'Summer Sale - Flat 50 off', 'flat', 50.00, '2024-05-01 00:00:00', '2024-06-30 23:59:59', 1),
-('c3-uuid-0003', 'FIRST100', 'First time user discount', 'flat', 100.00, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 1),
-('c4-uuid-0004', 'REFER15', 'Referral discount 15%', 'percent', 15.00, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 1);
+('c1-uuid-0001', 'NEWYEAR2025', 'New Year Special Discount', 'percent', 20.00, '2025-01-01 00:00:00', '2025-12-31 23:59:59', 1),
+('c2-uuid-0002', 'SUMMER50', 'Summer Sale - Flat 50 off', 'flat', 50.00, '2025-05-01 00:00:00', '2025-12-31 23:59:59', 1),
+('c3-uuid-0003', 'FIRST100', 'First time user discount', 'flat', 100.00, '2025-01-01 00:00:00', '2025-12-31 23:59:59', 1),
+('c4-uuid-0004', 'REFER15', 'Referral discount 15%', 'percent', 15.00, '2025-01-01 00:00:00', '2025-12-31 23:59:59', 1);
 
 -- ==========================================
 -- USERS (Password: 'password123' hashed with bcrypt)
@@ -86,11 +86,11 @@ INSERT INTO user_phones (id, phone_number, type, verified, user_id) VALUES
 -- MEMBERSHIPS
 -- ==========================================
 INSERT INTO memberships (id, user_id, start_date, end_date, status, membership_plan_id) VALUES
-('m1-uuid-0001', 'u1-uuid-0001', '2024-10-01', '2024-11-01', 'active', 'mp1-uuid-0001'),
-('m2-uuid-0002', 'u2-uuid-0002', '2024-09-01', '2024-12-01', 'active', 'mp2-uuid-0002'),
-('m3-uuid-0003', 'u3-uuid-0003', '2024-01-01', '2025-01-01', 'active', 'mp3-uuid-0003'),
+('m1-uuid-0001', 'u1-uuid-0001', '2025-10-01', '2025-11-01', 'active', 'mp1-uuid-0001'),
+('m2-uuid-0002', 'u2-uuid-0002', '2025-09-01', '2025-12-01', 'active', 'mp2-uuid-0002'),
+('m3-uuid-0003', 'u3-uuid-0003', '2025-01-01', '2026-01-01', 'active', 'mp3-uuid-0003'),
 ('m4-uuid-0004', 'u4-uuid-0004', '2024-08-01', '2024-09-01', 'expired', 'mp1-uuid-0001'),
-('m5-uuid-0005', 'u6-uuid-0006', '2024-10-15', '2024-11-15', 'active', 'mp4-uuid-0004');
+('m5-uuid-0005', 'u6-uuid-0006', '2025-10-15', '2025-11-15', 'active', 'mp4-uuid-0004');
 
 -- ==========================================
 -- PAYMENTS
@@ -107,20 +107,20 @@ INSERT INTO payments (id, user_id, membership_id, amount, payment_method, status
 -- ==========================================
 INSERT INTO sessions (id, studio_id, name, branch_id, description, start_time, end_time, activity_type_id, instructor, capacity) VALUES
 -- Today's sessions
-('sess-0001', 's1-uuid-0001', 'Morning Yoga Flow', 'b1-uuid-0001', 'Gentle yoga to start your day', '2024-10-30 07:00:00', '2024-10-30 08:00:00', 'at1-uuid-0001', 'Priya Sharma', 20),
-('sess-0002', 's2-uuid-0002', 'HIIT Cardio Blast', 'b1-uuid-0001', 'High intensity cardio workout', '2024-10-30 09:00:00', '2024-10-30 10:00:00', 'at2-uuid-0002', 'Rohit Kumar', 30),
-('sess-0003', 's3-uuid-0003', 'Strength & Power', 'b1-uuid-0001', 'Build muscle and strength', '2024-10-30 11:00:00', '2024-10-30 12:00:00', 'at3-uuid-0003', 'Vikram Singh', 25),
+('sess-0001', 's1-uuid-0001', 'Morning Yoga Flow', 'b1-uuid-0001', 'Gentle yoga to start your day', '2025-11-01 07:00:00', '2025-11-01 08:00:00', 'at1-uuid-0001', 'Priya Sharma', 20),
+('sess-0002', 's2-uuid-0002', 'HIIT Cardio Blast', 'b1-uuid-0001', 'High intensity cardio workout', '2025-11-01 09:00:00', '2025-11-01 10:00:00', 'at2-uuid-0002', 'Rohit Kumar', 30),
+('sess-0003', 's3-uuid-0003', 'Strength & Power', 'b1-uuid-0001', 'Build muscle and strength', '2025-11-01 11:00:00', '2025-11-01 12:00:00', 'at3-uuid-0003', 'Vikram Singh', 25),
 
 -- Future sessions
-('sess-0004', 's4-uuid-0004', 'Pilates Core', 'b2-uuid-0002', 'Core strengthening pilates', '2024-10-31 08:00:00', '2024-10-31 09:00:00', 'at4-uuid-0004', 'Anjali Gupta', 15),
-('sess-0005', 's5-uuid-0005', 'Spin Class Pro', 'b2-uuid-0002', 'Advanced spinning workout', '2024-10-31 10:00:00', '2024-10-31 11:00:00', 'at5-uuid-0005', 'Amit Verma', 20),
-('sess-0006', 's6-uuid-0006', 'Zumba Party', 'b3-uuid-0003', 'Dance your way to fitness', '2024-10-31 18:00:00', '2024-10-31 19:00:00', 'at6-uuid-0006', 'Sneha Reddy', 35),
-('sess-0007', 's7-uuid-0007', 'CrossFit WOD', 'b3-uuid-0003', 'Workout of the day', '2024-11-01 06:00:00', '2024-11-01 07:00:00', 'at7-uuid-0007', 'John Doe', 25),
-('sess-0008', 's8-uuid-0008', 'Boxing Basics', 'b4-uuid-0004', 'Learn boxing fundamentals', '2024-11-01 17:00:00', '2024-11-01 18:00:00', 'at8-uuid-0008', 'Mike Tyson Jr', 15),
+('sess-0004', 's4-uuid-0004', 'Pilates Core', 'b2-uuid-0002', 'Core strengthening pilates', '2025-11-02 08:00:00', '2025-11-02 09:00:00', 'at4-uuid-0004', 'Anjali Gupta', 15),
+('sess-0005', 's5-uuid-0005', 'Spin Class Pro', 'b2-uuid-0002', 'Advanced spinning workout', '2025-11-02 10:00:00', '2025-11-02 11:00:00', 'at5-uuid-0005', 'Amit Verma', 20),
+('sess-0006', 's6-uuid-0006', 'Zumba Party', 'b3-uuid-0003', 'Dance your way to fitness', '2025-11-02 18:00:00', '2025-11-02 19:00:00', 'at6-uuid-0006', 'Sneha Reddy', 35),
+('sess-0007', 's7-uuid-0007', 'CrossFit WOD', 'b3-uuid-0003', 'Workout of the day', '2025-11-03 06:00:00', '2025-11-03 07:00:00', 'at7-uuid-0007', 'John Doe', 25),
+('sess-0008', 's8-uuid-0008', 'Boxing Basics', 'b4-uuid-0004', 'Learn boxing fundamentals', '2025-11-03 17:00:00', '2025-11-03 18:00:00', 'at8-uuid-0008', 'Mike Tyson Jr', 15),
 
 -- More future sessions
-('sess-0009', 's1-uuid-0001', 'Evening Yoga Relax', 'b1-uuid-0001', 'Unwind with evening yoga', '2024-11-02 18:00:00', '2024-11-02 19:00:00', 'at1-uuid-0001', 'Priya Sharma', 20),
-('sess-0010', 's2-uuid-0002', 'Cardio Boot Camp', 'b1-uuid-0001', 'Military-style cardio training', '2024-11-02 07:00:00', '2024-11-02 08:00:00', 'at9-uuid-0009', 'Rahul Dravid', 30);
+('sess-0009', 's1-uuid-0001', 'Evening Yoga Relax', 'b1-uuid-0001', 'Unwind with evening yoga', '2025-11-04 18:00:00', '2025-11-04 19:00:00', 'at1-uuid-0001', 'Priya Sharma', 20),
+('sess-0010', 's2-uuid-0002', 'Cardio Boot Camp', 'b1-uuid-0001', 'Military-style cardio training', '2025-11-04 07:00:00', '2025-11-04 08:00:00', 'at9-uuid-0009', 'Rahul Dravid', 30);
 
 -- ==========================================
 -- BOOKINGS
