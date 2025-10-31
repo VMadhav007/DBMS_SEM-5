@@ -51,6 +51,7 @@ class UserRegister(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
     password: str = Field(..., min_length=6)
+    role: Optional[UserRole] = UserRole.user  # Default to 'user' if not provided
     date_of_birth: Optional[date] = None
     gender: Optional[str] = Field(None, max_length=10)
     phone_number: Optional[str] = Field(None, max_length=20)

@@ -10,6 +10,11 @@ import Sessions from './pages/Sessions';
 import Bookings from './pages/Bookings';
 import Payments from './pages/Payments';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminBranches from './pages/AdminBranches';
+import AdminStudios from './pages/AdminStudios';
+import AdminSessions from './pages/AdminSessions';
+import AdminCoupons from './pages/AdminCoupons';
+import AdminReports from './pages/AdminReports';
 import './App.css';
 
 function App() {
@@ -84,10 +89,7 @@ function App() {
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <Navbar />
-                  <div className="coming-soon">
-                    <h1>Manage Branches</h1>
-                    <p>This page is under construction</p>
-                  </div>
+                  <AdminBranches />
                 </ProtectedRoute>
               }
             />
@@ -96,10 +98,7 @@ function App() {
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <Navbar />
-                  <div className="coming-soon">
-                    <h1>Manage Studios</h1>
-                    <p>This page is under construction</p>
-                  </div>
+                  <AdminStudios />
                 </ProtectedRoute>
               }
             />
@@ -108,10 +107,7 @@ function App() {
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <Navbar />
-                  <div className="coming-soon">
-                    <h1>Manage Sessions</h1>
-                    <p>This page is under construction</p>
-                  </div>
+                  <AdminSessions />
                 </ProtectedRoute>
               }
             />
@@ -120,10 +116,7 @@ function App() {
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <Navbar />
-                  <div className="coming-soon">
-                    <h1>Manage Coupons</h1>
-                    <p>This page is under construction</p>
-                  </div>
+                  <AdminCoupons />
                 </ProtectedRoute>
               }
             />
@@ -132,10 +125,7 @@ function App() {
               element={
                 <ProtectedRoute requireAdmin={true}>
                   <Navbar />
-                  <div className="coming-soon">
-                    <h1>Reports</h1>
-                    <p>This page is under construction</p>
-                  </div>
+                  <AdminReports />
                 </ProtectedRoute>
               }
             />

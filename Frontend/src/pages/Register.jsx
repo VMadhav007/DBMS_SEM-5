@@ -10,6 +10,7 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'user',
     date_of_birth: '',
     gender: 'male',
     phone_number: '',
@@ -79,6 +80,14 @@ const Register = () => {
               required
               placeholder="Enter your email"
             />
+          </div>
+          
+          <div className="form-group">
+            <label>Role *</label>
+            <select name="role" value={formData.role} onChange={handleChange} required>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
           
           <div className="form-row">

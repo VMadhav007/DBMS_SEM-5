@@ -7,7 +7,9 @@ function AdminDashboard() {
   const [stats, setStats] = useState({
     revenue: [],
     activeMembers: [],
-    popularSessions: []
+    popularSessions: [],
+    totalSessions: 0,
+    activeCoupons: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -17,16 +19,20 @@ function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const [revenueRes, activeMembersRes, popularSessionsRes] = await Promise.all([
+      const [revenueRes, activeMembersRes, popularSessionsRes, sessionsRes, couponsRes] = await Promise.all([
         adminAPI.getRevenueReport(),
         adminAPI.getActiveMembers(),
-        adminAPI.getPopularSessions()
+        adminAPI.getPopularSessions(),
+        adminAPI.getSessions(),
+        adminAPI.getCoupons()
       ]);
 
       setStats({
         revenue: revenueRes.data,
         activeMembers: activeMembersRes.data,
-        popularSessions: popularSessionsRes.data
+        popularSessions: popularSessionsRes.data,
+        totalSessions: sessionsRes.data.length,
+        activeCoupons: couponsRes.data.filter(c => c.is_active && new Date(c.valid_to) >= new Date()).length
       });
     } catch (err) {
       console.error('Failed to load dashboard data:', err);
@@ -56,7 +62,7 @@ function AdminDashboard() {
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card">
+        <div className="stat-card highlight">
           <div className="stat-icon">💰</div>
           <div className="stat-info">
             <h3>Total Revenue</h3>
@@ -83,8 +89,16 @@ function AdminDashboard() {
         <div className="stat-card">
           <div className="stat-icon">🏋️</div>
           <div className="stat-info">
-            <h3>Sessions</h3>
-            <p className="stat-value">{stats.popularSessions.length}</p>
+            <h3>Total Sessions</h3>
+            <p className="stat-value">{stats.totalSessions}</p>
+          </div>
+        </div>
+
+        <div className="stat-card">
+          <div className="stat-icon">🎟️</div>
+          <div className="stat-info">
+            <h3>Active Coupons</h3>
+            <p className="stat-value">{stats.activeCoupons}</p>
           </div>
         </div>
       </div>
@@ -126,25 +140,33 @@ function AdminDashboard() {
 
       <div className="dashboard-sections">
         <div className="section">
-          <h2>Recent Revenue by Branch</h2>
+          <h2>Revenue Breakdown by Branch</h2>
           <div className="table-container">
             {stats.revenue.length > 0 ? (
               <table className="data-table">
                 <thead>
                   <tr>
                     <th>Branch</th>
-                    <th>Total Revenue</th>
+                    <th>City</th>
+                    <th>Total Sessions</th>
                     <th>Total Bookings</th>
+                    <th>Total Revenue</th>
                   </tr>
                 </thead>
                 <tbody>
                   {stats.revenue.map((item, index) => (
                     <tr key={index}>
-                      <td>{item.branch_name}</td>
-                      <td className="currency">{formatCurrency(item.total_revenue)}</td>
+                      <td><strong>{item.branch_name}</strong></td>
+                      <td>{item.city}</td>
+                      <td>{item.total_sessions}</td>
                       <td>{item.total_bookings}</td>
+                      <td className="currency">{formatCurrency(item.total_revenue)}</td>
                     </tr>
                   ))}
+                  <tr className="total-row">
+                    <td colSpan="4"><strong>TOTAL</strong></td>
+                    <td className="currency"><strong>{formatCurrency(totalRevenue)}</strong></td>
+                  </tr>
                 </tbody>
               </table>
             ) : (

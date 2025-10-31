@@ -702,27 +702,47 @@ def get_popular_sessions_report(db: Session = Depends(get_db)):
 
 
 @router.get("/reports/active-members")
-def get_active_members_count(db: Session = Depends(get_db)):
+def get_active_members_list(db: Session = Depends(get_db)):
     """
-    Get count of active members
+    Get list of active members with their membership details
     """
     try:
         query = text("""
-            SELECT COUNT(DISTINCT user_id) as active_members
-            FROM memberships
-            WHERE status = 'active' AND end_date >= CURDATE()
+            SELECT 
+                u.id AS user_id,
+                u.name AS user_name,
+                u.email,
+                mp.name AS plan_name,
+                m.start_date,
+                m.end_date,
+                m.status
+            FROM memberships m
+            INNER JOIN users u ON m.user_id = u.id
+            INNER JOIN membership_plans mp ON m.membership_plan_id = mp.id
+            WHERE m.status = 'active' AND m.end_date >= CURDATE()
+            ORDER BY m.end_date DESC
+            LIMIT 50
         """)
         
-        result = db.execute(query).fetchone()
+        results = db.execute(query).fetchall()
         
-        return {
-            "active_members": result[0]
-        }
+        return [
+            {
+                "user_id": row[0],
+                "user_name": row[1],
+                "email": row[2],
+                "plan_name": row[3],
+                "start_date": row[4].isoformat() if row[4] else None,
+                "end_date": row[5].isoformat() if row[5] else None,
+                "status": row[6]
+            }
+            for row in results
+        ]
         
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get active members count: {str(e)}"
+            detail=f"Failed to get active members list: {str(e)}"
         )
 
 

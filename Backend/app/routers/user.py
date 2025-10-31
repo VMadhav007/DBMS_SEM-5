@@ -27,6 +27,9 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
     Register a new user
     """
     try:
+        print(f"[REGISTER] Raw request received")
+        print(f"[REGISTER] User object: {user}")
+        print(f"[REGISTER] Attempting to register user: {user.email}, role: {user.role}, role type: {type(user.role)}")
         user_id = str(uuid.uuid4())
         hashed_pwd = hash_password(user.password)
         
@@ -35,29 +38,52 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
             CALL add_user(:id, :name, :email, :password_hash, :role, :dob, :gender)
         """)
         
-        db.execute(query, {
-            'id': user_id,
-            'name': user.name,
-            'email': user.email,
-            'password_hash': hashed_pwd,
-            'role': 'user',
-            'dob': user.date_of_birth,
-            'gender': user.gender
-        })
+        # Get role as string - simplified handling
+        role_value = 'user'  # default
+        if user.role:
+            if isinstance(user.role, str):
+                role_value = user.role.lower()
+            elif hasattr(user.role, 'value'):
+                role_value = user.role.value.lower()
+        
+        print(f"[REGISTER] Final role_value: {role_value}")
+        
+        print(f"[REGISTER] Executing stored procedure with params: id={user_id}, name={user.name}, email={user.email}, role={role_value}, dob={user.date_of_birth}, gender={user.gender}")
+        
+        try:
+            db.execute(query, {
+                'id': user_id,
+                'name': user.name,
+                'email': user.email,
+                'password_hash': hashed_pwd,
+                'role': role_value,
+                'dob': user.date_of_birth,
+                'gender': user.gender
+            })
+            print(f"[REGISTER] User inserted successfully")
+        except Exception as e:
+            print(f"[REGISTER] Error inserting user: {str(e)}")
+            raise
         
         # Add phone if provided
         if user.phone_number:
-            phone_query = text("""
-                INSERT INTO user_phones (id, phone_number, user_id, type, verified)
-                VALUES (:id, :phone, :user_id, 'mobile', 0)
-            """)
-            db.execute(phone_query, {
-                'id': str(uuid.uuid4()),
-                'phone': user.phone_number,
-                'user_id': user_id
-            })
+            try:
+                phone_query = text("""
+                    INSERT INTO user_phones (id, phone_number, user_id, type, verified)
+                    VALUES (:id, :phone, :user_id, 'mobile', 0)
+                """)
+                db.execute(phone_query, {
+                    'id': str(uuid.uuid4()),
+                    'phone': user.phone_number,
+                    'user_id': user_id
+                })
+                print(f"[REGISTER] Phone number added successfully")
+            except Exception as e:
+                print(f"[REGISTER] Error adding phone: {str(e)}")
+                raise
         
         db.commit()
+        print(f"[REGISTER] Transaction committed successfully")
         
         # Fetch and return user
         result = db.execute(
@@ -77,13 +103,14 @@ def register_user(user: UserRegister, db: Session = Depends(get_db)):
         
     except Exception as e:
         db.rollback()
+        print(f"[REGISTER] Exception caught: {type(e).__name__}: {str(e)}")
         if "Duplicate entry" in str(e):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Email already registered"
             )
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Registration failed: {str(e)}"
         )
 
@@ -94,6 +121,7 @@ def login_user(credentials: UserLogin, db: Session = Depends(get_db)):
     Login user and return user info
     """
     try:
+        print(f"[LOGIN] Attempting to login user: {credentials.email}")
         # Get user by email
         query = text("SELECT * FROM users WHERE email = :email")
         result = db.execute(query, {'email': credentials.email}).fetchone()
