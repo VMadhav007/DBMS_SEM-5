@@ -174,6 +174,45 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db)):
         )
 
 
+@router.get("/coupons", response_model=List[dict])
+def get_active_coupons(db: Session = Depends(get_db)):
+    """
+    Get all active and valid coupons
+    """
+    try:
+        query = text("""
+            SELECT id, code, description, discount_type, discount_value, 
+                   valid_from, valid_to, is_active
+            FROM coupons 
+            WHERE is_active = 1 
+            AND valid_from <= NOW() 
+            AND valid_to >= NOW()
+            ORDER BY code ASC
+        """)
+        
+        results = db.execute(query).fetchall()
+        
+        return [
+            {
+                "id": row[0],
+                "code": row[1],
+                "description": row[2],
+                "discount_type": row[3],
+                "discount_value": float(row[4]),
+                "valid_from": row[5].isoformat() if row[5] else None,
+                "valid_to": row[6].isoformat() if row[6] else None,
+                "is_active": bool(row[7])
+            }
+            for row in results
+        ]
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch coupons: {str(e)}"
+        )
+
+
 @router.get("/membership-plans", response_model=List[MembershipPlanResponse])
 def get_membership_plans(db: Session = Depends(get_db)):
     """
@@ -249,6 +288,10 @@ def purchase_membership(
         result = db.execute(text("SELECT @membership_id, @payment_id")).fetchone()
         membership_id, payment_id = result[0], result[1]
         
+        discount_amount = 0
+        coupon_message = ""
+        final_amount = amount
+        
         # Apply coupon if provided
         if purchase.coupon_code:
             try:
@@ -260,10 +303,36 @@ def purchase_membership(
                     'user_id': user_id,
                     'payment_id': payment_id
                 })
-                discount_result = db.execute(text("SELECT @discount")).fetchone()
-                amount -= float(discount_result[0])
-            except:
-                pass  # Continue even if coupon fails
+                db.commit()  # Commit coupon application
+                
+                # Get the updated payment amount after coupon
+                updated_payment = db.execute(
+                    text("SELECT amount FROM payments WHERE id = :id"),
+                    {'id': payment_id}
+                ).fetchone()
+                
+                final_amount = float(updated_payment[0]) if updated_payment else amount
+                discount_amount = amount - final_amount
+                
+                if discount_amount > 0:
+                    coupon_message = f" Coupon '{purchase.coupon_code}' applied! Saved ₹{discount_amount:.2f}"
+                else:
+                    coupon_message = f" Note: Coupon '{purchase.coupon_code}' was applied but no discount given"
+                    
+            except Exception as coupon_error:
+                # Log the error but don't fail the purchase - continue without coupon
+                error_msg = str(coupon_error)
+                
+                # Extract meaningful error message from MySQL error
+                if "Invalid or inactive coupon" in error_msg:
+                    coupon_message = f" Note: Coupon '{purchase.coupon_code}' is invalid or inactive"
+                elif "not valid at this time" in error_msg:
+                    coupon_message = f" Note: Coupon '{purchase.coupon_code}' is expired"
+                else:
+                    coupon_message = f" Note: Coupon could not be applied"
+                
+                print(f"Coupon error: {coupon_error}")
+                # Don't rollback the entire transaction, just continue without coupon
         
         # Mark payment as success
         db.execute(
@@ -274,10 +343,11 @@ def purchase_membership(
         db.commit()
         
         return {
-            "message": "Membership purchased successfully",
+            "message": f"Membership purchased successfully!{coupon_message}",
             "membership_id": membership_id,
             "payment_id": payment_id,
-            "final_amount": amount
+            "final_amount": final_amount,
+            "discount_applied": discount_amount
         }
         
     except HTTPException:
@@ -549,13 +619,12 @@ def get_user_payments(user_id: str, db: Session = Depends(get_db)):
                 p.payment_method,
                 p.payment_time as payment_date,
                 p.status as payment_status,
-                COALESCE(p.discount_applied, 0) as discount_applied,
                 mp.name as membership_name,
-                c.code as coupon_code
+                cr.id as has_coupon
             FROM payments p
             LEFT JOIN memberships m ON p.membership_id = m.id
             LEFT JOIN membership_plans mp ON m.membership_plan_id = mp.id
-            LEFT JOIN coupons c ON p.coupon_id = c.id
+            LEFT JOIN coupon_redemptions cr ON p.id = cr.payment_id
             WHERE p.user_id = :user_id
             ORDER BY p.payment_time DESC
         """)
@@ -569,9 +638,9 @@ def get_user_payments(user_id: str, db: Session = Depends(get_db)):
                 "payment_method": row[2],
                 "payment_date": row[3],
                 "payment_status": row[4],
-                "discount_applied": float(row[5]),
-                "membership_name": row[6],
-                "coupon_code": row[7]
+                "membership_name": row[5],
+                "discount_applied": 0,
+                "coupon_code": None
             }
             for row in results
         ]

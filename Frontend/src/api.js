@@ -22,6 +22,7 @@ export const authAPI = {
 export const userAPI = {
   getProfile: (userId) => api.get(`/user/profile/${userId}`),
   getMembershipPlans: () => api.get('/user/membership-plans'),
+  getCoupons: () => api.get('/user/coupons'),
   purchaseMembership: (userId, data) => api.post(`/user/purchase-membership/${userId}`, data),
   getMyMemberships: (userId) => api.get(`/user/my-memberships/${userId}`),
   getSessions: () => api.get('/user/sessions'),
